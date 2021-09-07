@@ -2,7 +2,7 @@
 Code for the paper: ["Perturbing Inputs for Fragile Interpretations in Deep Natural Language Processing"](https://arxiv.org/abs/2108.04990)
 (EMNLP BlackboxNLP - 2021)
 
-Pre-calculated candidates and interpretations are available on Google drive [here](https://drive.google.com/drive/folders/1U_bcpKa9OHR11z_o1EXo1QPzUcOxs5jT?usp=sharing). The results can be replicated by running the `results-metric.py` script. The exact commmands are detailed in Step-4.
+Pre-calculated candidates and interpretations are available on Google drive [here](https://drive.google.com/drive/folders/1U_bcpKa9OHR11z_o1EXo1QPzUcOxs5jT?usp=sharing). The results can be replicated by running the `results-metric.py` script. The exact commmands are detailed in Step-5.
 
 Following steps re-run the candidate generation process and re-calculate interpretations.
 
