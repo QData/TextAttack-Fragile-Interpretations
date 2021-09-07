@@ -30,7 +30,7 @@ def main():
 	parser.add_argument("-s","--split",required=True, help="Split of dataset")
 	parser.add_argument("-num","--number",required=True, type=int, help="Number of samples from dataset")
 	parser.add_argument("-c","--candidatefolder",required=False, default='./candidates/',help="Folder to store candidates")
-	parser.add_argument("-ld","--loadfromfolder",required=True, default=False, help="Whether to load data from - file or huggingface")
+	parser.add_argument("-ld","--loadfromfolder",required=False, default=False, help="Whether to load data from - file or huggingface")
 	parser.add_argument("-mf","--modelfolder",required=False, default='./models/',help="Folder to load models from")
 	args = parser.parse_args()
 
