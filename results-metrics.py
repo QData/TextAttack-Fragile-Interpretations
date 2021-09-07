@@ -339,6 +339,144 @@ def main():
 
 			for per_w in range(1,len(p)):
 				try:
+					results_lom.append(rank_correlation( i0, p[per_w][1][1][0])[0] )
+					results_l2.append(rank_correlation( i0, t[per_w][1][1][0])[0] )
+					# results_lom.append(topk_intersection( i0, p[per_w][1][1][0]) )
+					# results_l2.append(topk_intersection( i0, t[per_w][1][1][0]) )
+					resultsx.append(per_w/sent_len)
+				except:
+					print("error")
+					pass
+			print(idx)
+
+
+
+
+		d_lom= {}
+		d_l2 = {}
+		for ix in range(len(resultsx)):
+			idex = int(10*resultsx[ix])
+			if idex not in d_lom:
+				d_lom[idex] = [max(0,results_lom[ix])]
+			else:
+				if results_lom[ix] < 0:
+					d_lom[idex].append(0)
+				else:
+					d_lom[idex].append(results_lom[ix])
+
+			if idex not in d_l2:
+				d_l2[idex] = [max(0,results_l2[ix])]
+			else:
+				if results_l2[ix] < 0:
+					d_l2[idex].append(0)
+				else:
+					d_l2[idex].append(results_l2[ix])
+
+
+		data_to_plot_lom = [d_lom[i] for i in range(min(5,len(d_lom)))]
+		data_to_plot_l2 = [d_l2[i] for i in range(min(5,len(d_l2)))]
+
+		print("Mean LOM:",[np.mean(m) for m in data_to_plot_lom])
+		print("Mean L2:",[np.mean(m) for m in data_to_plot_l2])
+
+		plot_violin_graph(data_to_plot_lom,"Ratio of words perturbed","Rank Correlation(LOM)",args.resultfolder+"violinplot-"+str(args.dataset)+"-"+str(args.model)+"-"+"rank-corr-lom.png")
+		plot_violin_graph(data_to_plot_l2,"Ratio of words perturbed","Rank Correlation(L2)",args.resultfolder+"violinplot-"+str(args.dataset)+"-"+str(args.model)+"-"+"rank-corr-l2.png")
+
+	if args.metric == "topk":
+
+		interpretation_name = args.interpretfolder+"interpretations-"+args.dataset+"-"+args.model+"-"+args.interpretmethod+'-'+str(args.number)+".pkl"
+		original_interpretation_name = args.interpretfolder+"original_sentences/original-interpretations-"+args.dataset+"-"+args.model+"-"+args.interpretmethod+'-'+str(args.number)+".pkl"
+		
+		with open(interpretation_name, 'rb') as f:
+			interp = pickle.load(f)
+
+		with open(original_interpretation_name, 'rb') as f:
+			orig_interp = pickle.load(f)
+
+		
+		if args.number == -1:
+			args.number = len(fin)
+
+		lom_list = []
+		l2_list = []
+
+		ids = range(args.number)
+		for fn,idx in zip(interp,ids):
+			# if orig_interp[idx][1] == None:
+			# 	print("Skippped due to external factors")
+			# 	continue
+			try:
+			# print(orig_interp[idx])
+				print("Calculating on %d of %d total sentences" %(idx,len(ids)))
+				p2s = {}
+				t2s = {}
+				cms_original = com_scores(orig_interp[idx][1][0],orig_interp[idx][1][1])
+				cntim = 0
+				tot = 0
+				for i in range(len(fn)):
+					for j in range(len(fn[i])):
+						try:
+							w = len(diff(AttackedText(orig_interp[idx][0]),AttackedText(fn[i][j][0])))
+							cms = com_scores(fn[i][j][1][0],fn[i][j][1][1])
+
+							w_o = orig_interp[idx][1][1]
+							i_o = orig_interp[idx][1][0]
+							w_c = fn[i][j][1][1]
+							i_c = fn[i][j][1][0]
+
+							if orig_interp[idx][1][0].size() != fn[i][j][1][0].size():
+								
+								w_o,i_o,w_c,i_c = rationalize(w_o,i_o,w_c,i_c)
+								# orig_interp[idx][1][1],orig_interp[idx][1][0],fn[i][j][1][1],fn[i][j][1][0] = rationalize(w_o,i_o,w_c,i_c)
+								cms = com_scores(fn[i][j][1][0],fn[i][j][1][1])
+
+							if w not in p2s:						
+								# p2s[w] = (np.linalg.norm(cms_original-cms),fn[i][j])
+								p2s[w] = (np.linalg.norm(cms_original-cms),[fn[i][j][0],[i_c,w_c]])
+							else:
+								if np.linalg.norm(cms_original-cms) > p2s[w][0]:
+									# p2s[w] = (np.linalg.norm(cms_original-cms),fn[i][j])
+									p2s[w] = (np.linalg.norm(cms_original-cms),[fn[i][j][0],[i_c,w_c]])
+
+							if w not in t2s:
+								# t2s[w] = (l2_scores(orig_interp[idx][1][0]-fn[i][j][1][0]),fn[i][j])
+								t2s[w] = (l2_scores(i_o-i_c),[fn[i][j][0],[i_c,w_c]])
+							else:
+								# if l2_scores(orig_interp[idx][1][0]-fn[i][j][1][0])> t2s[w][0]:
+								# 	t2s[w] = (l2_scores(orig_interp[idx][1][0]-fn[i][j][1][0]),fn[i][j])
+								if l2_scores(i_o-i_c)> t2s[w][0]:
+									t2s[w] = (l2_scores(i_o-i_c),[fn[i][j][0],[i_c,w_c]])
+							tot+=1
+
+						except:
+							# print("Skipped sentence #",i,j)
+							cntim+=1
+							pass
+				print("Skipped",cntim,tot)
+				lom_list.append(p2s)
+				l2_list.append(t2s)
+			except:
+				print("Fail on sentence: %d"%idx)
+				lom_list.append(None)
+				l2_list.append(None)
+
+
+
+		resultsx = []
+		results_lom = []
+		results_l2 = []
+
+
+		for p,t,idx in zip(lom_list,l2_list,ids):
+			if p==None or t==None or orig_interp==None or orig_interp[idx][1]==None:
+				print("Skipped,",idx)
+				continue
+
+			i0,f0 = orig_interp[idx][1][0],orig_interp[idx][1][1]
+			sent_len = min(len(f0)-2,128)
+
+			for per_w in range(1,len(p)):
+				try:
 					# results_lom.append(rank_correlation( i0, p[per_w][1][1][0])[0] )
 					# results_l2.append(rank_correlation( i0, t[per_w][1][1][0])[0] )
 					results_lom.append(topk_intersection( i0, p[per_w][1][1][0]) )
@@ -379,9 +517,8 @@ def main():
 		print("Mean LOM:",[np.mean(m) for m in data_to_plot_lom])
 		print("Mean L2:",[np.mean(m) for m in data_to_plot_l2])
 
-		plot_violin_graph(data_to_plot_lom,"Ratio of words perturbed","Rank Correlation(LOM)",args.resultfolder+"violinplot-"+str(args.dataset)+"-"+str(args.model)+"-"+"rank-corr-lom.png")
-		plot_violin_graph(data_to_plot_l2,"Ratio of words perturbed","Rank Correlation(L2)",args.resultfolder+"violinplot-"+str(args.dataset)+"-"+str(args.model)+"-"+"rank-corr-l2.png")
-
+		plot_violin_graph(data_to_plot_lom,"Ratio of words perturbed","TopK (LOM)",args.resultfolder+"violinplot-"+str(args.dataset)+"-"+str(args.model)+"-"+"rank-corr-lom.png")
+		plot_violin_graph(data_to_plot_l2,"Ratio of words perturbed","TopK (L2)",args.resultfolder+"violinplot-"+str(args.dataset)+"-"+str(args.model)+"-"+"rank-corr-l2.png")
 
 	if args.metric == "ppl":
 

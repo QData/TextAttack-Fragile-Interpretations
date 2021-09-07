@@ -17,4 +17,4 @@ Following steps re-run the candidate generation process and re-calculate interpr
 
 5. Once all interpretations have been calculated, run `python results-metrics.py --model=distilbert --dataset=sst2 --interpretmethod=IG --number=500 --split=validation --metric=rkc`.
 
-The available metrics are `rkc (Rank Correlation)`,`ppl (Perplexity)`, `grm (Grammar errors)` and `conf (Model Confidence)`. Results are stored in `./results`.
+The available metrics are `rkc (Rank Correlation)`, `topk (Top-K Intersection)`,`ppl (Perplexity)`, `grm (Grammar errors)` and `conf (Model Confidence)`. Results are stored in `./results`.
