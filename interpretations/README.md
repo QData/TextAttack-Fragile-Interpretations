@@ -1,0 +1,2 @@
+# Interpretations Folder
+From the Google drive [link](https://drive.google.com/drive/folders/1U_bcpKa9OHR11z_o1EXo1QPzUcOxs5jT?usp=sharing) download all pre-calculated interpretations (IG/LIME) on all models and datasets. The `original_sentences` folder contains ground truth's interpretations.
